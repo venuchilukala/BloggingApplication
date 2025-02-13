@@ -7,8 +7,8 @@ router
     .route('/signup')
     .get((req, res) => {
         return res.render("signup")
-    }).post(async (req, res)=>{
-        const {fullName, email, password} = req.body;
+    }).post(async (req, res) => {
+        const { fullName, email, password } = req.body;
 
         await User.create({
             fullName,
@@ -22,12 +22,24 @@ router
     .route('/signin')
     .get((req, res) => {
         return res.render("signin")
-    }).post(async (req, res)=>{
-        const {email, password} = req.body;
-       const user = await User.matchPassword(email, password)
+    }).post(async (req, res) => {
+        const { email, password } = req.body;
+        try {
+            const token = await User.matchPasswordAndGenerateToken(email, password)
+            return res.cookie('token', token).redirect("/")
 
-       console.log("user", user)
-       return res.redirect("/")
+        } catch (error) {
+            return res.render('signin', {
+                error : "Incorrect Password or email"
+            })
+        }
+
+    })
+
+router
+    .route('/logout')
+    .get((req, res)=>{
+        return res.clearCookie('token').redirect('/')
     })
 
 module.exports = router 

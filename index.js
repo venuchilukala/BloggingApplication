@@ -1,8 +1,10 @@
 const express = require('express')
 const path = require('path')
 const mongoose = require('mongoose')
+const cookieParser = require('cookie-parser')
 
 const userRoutes = require('./routes/userRoutes')
+const { checkForAuthenticationCookie } = require('./middlewares/authentication')
 
 // Mongodb Connection
 mongoose.connect('mongodb://127.0.0.1:27017/blogify').then(()=> console.log("Mongodb connected"))
@@ -16,12 +18,16 @@ app.set("views", path.resolve('./views'))
 
 // Middlewares
 app.use(express.urlencoded({extended: false}))
+app.use(cookieParser())
+app.use(checkForAuthenticationCookie('token'))
 
 // Routes
 app.use('/user', userRoutes)
 
 app.get('/', (req, res) => {
-    return res.render("home")
+    return res.render("home", {
+        user : JSON.stringify(req.user)
+    })
 })
 
 
